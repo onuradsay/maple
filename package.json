@@ -1,0 +1,23 @@
+{
+  "name": "maple",
+  "version": "0.1.0",
+  "peerDependencies": {
+    "@angular/common": "^11.0.6",
+    "@angular/core": "^11.0.6"
+  },
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
+  "main": "bundles/maple.umd.js",
+  "module": "fesm5/maple.js",
+  "es2015": "fesm2015/maple.js",
+  "esm5": "esm5/maple.js",
+  "esm2015": "esm2015/maple.js",
+  "fesm5": "fesm5/maple.js",
+  "fesm2015": "fesm2015/maple.js",
+  "typings": "maple.d.ts",
+  "sideEffects": false,
+  "scripts": {
+    "prepublishOnly": "node --eval \"console.error('ERROR: Trying to publish a package that has been compiled by Ivy. This is not allowed.\\nPlease delete and rebuild the package, without compiling with Ivy, before attempting to publish.\\n')\" && exit 1"
+  }
+}
