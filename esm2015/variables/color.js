@@ -1,0 +1,19 @@
+export const MAPLE_VAR_COLOR = {
+    body: '#fff',
+    alpha: '#000',
+    beta: '#333',
+    link: '#1a6fba',
+    danger: '#b00',
+    dark: '#212529',
+    info: '#17a2b8',
+    light: '#f0f0f0',
+    muted: '#ccc',
+    success: '#44602d',
+    warning: '#ffc107',
+    black: '#000',
+    white: '#fff',
+    inherit: 'inherit',
+    transparent: 'transparent',
+    currentColor: 'currentColor',
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiY29sb3IuanMiLCJzb3VyY2VSb290Ijoibmc6Ly9tYXBsZS8iLCJzb3VyY2VzIjpbInZhcmlhYmxlcy9jb2xvci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSxNQUFNLENBQUMsTUFBTSxlQUFlLEdBQUc7SUFDN0IsSUFBSSxFQUFFLE1BQU07SUFDWixLQUFLLEVBQUUsTUFBTTtJQUNiLElBQUksRUFBRSxNQUFNO0lBQ1osSUFBSSxFQUFFLFNBQVM7SUFDZixNQUFNLEVBQUUsTUFBTTtJQUNkLElBQUksRUFBRSxTQUFTO0lBQ2YsSUFBSSxFQUFFLFNBQVM7SUFDZixLQUFLLEVBQUUsU0FBUztJQUNoQixLQUFLLEVBQUUsTUFBTTtJQUNiLE9BQU8sRUFBRSxTQUFTO0lBQ2xCLE9BQU8sRUFBRSxTQUFTO0lBQ2xCLEtBQUssRUFBRSxNQUFNO0lBQ2IsS0FBSyxFQUFFLE1BQU07SUFDYixPQUFPLEVBQUUsU0FBUztJQUNsQixXQUFXLEVBQUUsYUFBYTtJQUMxQixZQUFZLEVBQUUsY0FBYztDQUM3QixDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiZXhwb3J0IGNvbnN0IE1BUExFX1ZBUl9DT0xPUiA9IHtcbiAgYm9keTogJyNmZmYnLFxuICBhbHBoYTogJyMwMDAnLFxuICBiZXRhOiAnIzMzMycsXG4gIGxpbms6ICcjMWE2ZmJhJyxcbiAgZGFuZ2VyOiAnI2IwMCcsXG4gIGRhcms6ICcjMjEyNTI5JyxcbiAgaW5mbzogJyMxN2EyYjgnLFxuICBsaWdodDogJyNmMGYwZjAnLFxuICBtdXRlZDogJyNjY2MnLFxuICBzdWNjZXNzOiAnIzQ0NjAyZCcsXG4gIHdhcm5pbmc6ICcjZmZjMTA3JyxcbiAgYmxhY2s6ICcjMDAwJyxcbiAgd2hpdGU6ICcjZmZmJyxcbiAgaW5oZXJpdDogJ2luaGVyaXQnLFxuICB0cmFuc3BhcmVudDogJ3RyYW5zcGFyZW50JyxcbiAgY3VycmVudENvbG9yOiAnY3VycmVudENvbG9yJyxcbn07XG4iXX0=
