@@ -48,6 +48,7 @@ const R_SEP_NO_SPACE = /\</g;
 const R_SEP_SEL_SPACE = /\>\>/g;
 const R_SEP_SEL_SPACE_ALL = /(\<|\>\>)/g;
 const R_SEP_VAL_SPACE = /\|/g;
+const R_SEP_GRID_ROW_SPACE = /\-/g;
 const R_SEP_UTIL_VAL = /=(?:.(?!=))+$/;
 const R_SEP_UTIL_KEY = /\:(?:.(?!\:))+$/;
 const R_CUSTOM = /\((.*?)\)/;
@@ -120,7 +121,9 @@ export class Maple {
     document?: any,
   ): void {
     // Prepare style element on head
-    const docHead = (document || doc).getElementsByTagName('head')[0];
+    const docHead = document?.host
+      ? document
+      : (document || doc).getElementsByTagName('head')[0];
     const breakpoints = Object.keys(BREAKPOINT.media).sort(
       (a, b) => BREAKPOINT.media[a] - BREAKPOINT.media[b],
     );
@@ -133,12 +136,13 @@ export class Maple {
 
     breakpointsUp.concat(breakpointsDown.reverse()).forEach((key) => {
       const styleId = `${prefix}-${key}`;
-      const el = doc.getElementById(styleId);
+      const el = document?.host ? null : doc.getElementById(styleId);
       if (!!el) {
         docHead.removeChild(el);
       }
       styleElements[key] = (doc as Document).createElement('style');
       (styleElements[key] as HTMLElement).setAttribute('id', styleId);
+
       docHead.appendChild(styleElements[key]);
     });
   }
@@ -168,6 +172,7 @@ export class Maple {
     // tslint:disable-next-line: variable-name
     _selector: string = STR_EMPTY,
     important: boolean = false,
+    shadowRoot: boolean,
   ): string {
     const maple = Maple.utilClassMap[selKey] || {};
     const parentSelector = selKey.includes(SEP_OUTER_SPACE)
@@ -187,19 +192,26 @@ export class Maple {
       .split(/,\s*/)
       .map((selector) =>
         [
-          parentSelector ? parentSelector + STR_SPACE : STR_EMPTY,
-          utilVal ? STR_DOT : STR_EMPTY,
-          utilVal ? esc(baseSel + utilVal) : `[class*="${baseSel}"]`,
-          utilVal && important ? esc(IMPORTANT) : STR_EMPTY,
-          maple._selector || !selKey || selKey.charAt(0) === SEP_NO_SPACE
-            ? STR_EMPTY
-            : STR_SPACE,
-          selector.trim().charAt(0) === SEP_NO_SPACE ? STR_EMPTY : STR_SPACE,
+          ...(!shadowRoot
+            ? [
+                parentSelector ? parentSelector + STR_SPACE : STR_EMPTY,
+                utilVal ? STR_DOT : STR_EMPTY,
+                utilVal ? esc(baseSel + utilVal) : `[class*="${baseSel}"]`,
+                utilVal && important ? esc(IMPORTANT) : STR_EMPTY,
+                maple._selector || !selKey || selKey.charAt(0) === SEP_NO_SPACE
+                  ? STR_EMPTY
+                  : STR_SPACE,
+                selector.trim().charAt(0) === SEP_NO_SPACE
+                  ? STR_EMPTY
+                  : STR_SPACE,
+              ]
+            : []),
           selector
             .trim()
             .replace(SEP_OUTER_SPACE + parentSelector, STR_EMPTY)
             .replace(R_SEP_SEL_SPACE, STR_SPACE)
-            .replace(R_SEP_NO_SPACE, STR_EMPTY),
+            .replace(R_SEP_NO_SPACE, STR_EMPTY)
+            .replace(shadowRoot ? /^\>/ : STR_EMPTY, STR_EMPTY),
         ].join(STR_EMPTY),
       )
       .join(',');
@@ -209,13 +221,14 @@ export class Maple {
     media: string,
     selector: string,
     mapToBeCached: any,
+    shadowRoot: boolean = false,
   ): void {
     if (!mapToBeCached) {
       throw new Error(`Property map not found for selector: ${selector}`);
     }
 
     const cacheKey = `${media}${selector}${JSON.stringify(mapToBeCached)}`;
-    if (!Maple.CACHE[cacheKey]) {
+    if (!Maple.CACHE[cacheKey] || shadowRoot) {
       Maple.tempCache[media] = Maple.tempCache[media] || {};
       Maple.tempCache[media] = {
         ...Maple.tempCache[media],
@@ -471,7 +484,7 @@ export class Maple {
     return data;
   }
 
-  public static fly(classList: any): void {
+  public static fly(classList: any, shadowRoot?: DocumentFragment): void {
     if (isMapleEnabled === false) {
       return;
     }
@@ -488,7 +501,7 @@ export class Maple {
       ? classList.join(' ')
       : classList;
 
-    if (Maple.rawCache[rawCacheKey]) {
+    if (Maple.rawCache[rawCacheKey] && !shadowRoot) {
       return;
     }
     Maple.rawCache[rawCacheKey] = 1;
@@ -528,8 +541,10 @@ export class Maple {
       const utilKey = parts.length >= 1 ? parts.pop() : null;
 
       // Extract selector
-      const selKey = parts.join(SEP_UTIL_KEY);
-
+      let selKey = parts.join(SEP_UTIL_KEY);
+      if (!selKey && shadowRoot) {
+        selKey = ':host';
+      }
       // Get style map
       const maple = Maple.utilClassMap[utilKey];
 
@@ -550,11 +565,13 @@ export class Maple {
               null,
               maple._selector,
               important,
+              !!shadowRoot,
             ),
             {
               ...maple._common,
               ...maple[maple._default[mediaItem]],
             },
+            !!shadowRoot,
           );
         });
       }
@@ -599,41 +616,56 @@ export class Maple {
           utilVal,
           maple._selector,
           important,
+          !!shadowRoot,
         );
 
-        Maple.cache(media, selector, {
-          ...maple._common,
-          ...maple[utilVal],
-          ...JSON.parse(
-            JSON.stringify(
-              maple[utilVal.replace(R_CUSTOM, WILDCARD)] || {},
-            ).replace(
-              R_WILDCARD,
-              utilKey === 'content'
-                ? utilVal.replace(R_CUSTOM, '$1')
-                : utilVal.replace(R_CUSTOM, '$1').replace(R_SEP_VAL_SPACE, ' '),
+        Maple.cache(
+          media,
+          selector,
+          {
+            ...maple._common,
+            ...maple[utilVal],
+            ...JSON.parse(
+              JSON.stringify(
+                maple[utilVal.replace(R_CUSTOM, WILDCARD)] || {},
+              ).replace(
+                R_WILDCARD,
+                utilKey === 'content'
+                  ? utilVal.replace(R_CUSTOM, '$1')
+                  : utilKey === 'grid-areas'
+                  ? `\\"${utilVal
+                      .replace(R_CUSTOM, '$1')
+                      .replace(R_SEP_VAL_SPACE, ' ')
+                      .replace(R_SEP_GRID_ROW_SPACE, '\\" \\"')}\\"`
+                  : utilVal
+                      .replace(R_CUSTOM, '$1')
+                      .replace(R_SEP_VAL_SPACE, ' '),
+              ),
             ),
-          ),
-          ...(ucm[wcMediaKey] || {}),
-          ...(ucm[wcutilKey] || {}),
-          ...(ucm[wcMediaVal] || {}),
-          ...(ucm[wcutilVal] || {}),
-          ...(ucm[wcMedia] || {}),
-          ...(ucm[c] || {}),
-          [IMPORTANT]: important,
-        });
+            ...(ucm[wcMediaKey] || {}),
+            ...(ucm[wcutilKey] || {}),
+            ...(ucm[wcMediaVal] || {}),
+            ...(ucm[wcutilVal] || {}),
+            ...(ucm[wcMedia] || {}),
+            ...(ucm[c] || {}),
+            [IMPORTANT]: important,
+          },
+          !!shadowRoot,
+        );
       }
     }
 
     //#region Generate styles
     // Generate min media query styles
+    const styleElements = shadowRoot ? {} : STYLE_ELEMENTS;
     const minMediaStyles = Maple.styles(BREAKPOINT.minMedia);
     if (minMediaStyles) {
       Maple.appendStyle(
-        STYLE_ELEMENTS,
+        styleElements,
         BREAKPOINT.minMedia,
         minMediaStyles,
         false,
+        shadowRoot,
       );
     }
 
@@ -646,7 +678,13 @@ export class Maple {
       }
     });
     Object.keys(mediaQueryStyles).forEach((key) =>
-      Maple.appendStyle(STYLE_ELEMENTS, key, mediaQueryStyles[key], false),
+      Maple.appendStyle(
+        styleElements,
+        key,
+        mediaQueryStyles[key],
+        false,
+        shadowRoot,
+      ),
     );
     //#endregion
   }
@@ -672,7 +710,11 @@ export class Maple {
     bp: string,
     style: string,
     silent: boolean = true,
+    shadowRoot?: DocumentFragment,
   ): void {
+    if (!Object.keys(styleElements).length && shadowRoot) {
+      Maple.createDomElements(styleElements, 'maple', shadowRoot);
+    }
     styleElements[bp].appendChild(doc.createTextNode(style));
 
     if (!silent) {
