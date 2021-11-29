@@ -57,7 +57,10 @@ type NgClassSupportedTypes =
  *
  * @publicApi
  */
-@Directive({ selector: '[mpClass]' })
+
+@Directive({
+  selector: '[mpClass]',
+})
 export class MpClass implements DoCheck {
   private _iterableDiffer: IterableDiffer<string> | null = null;
   private _keyValueDiffer: KeyValueDiffer<string, any> | null = null;
