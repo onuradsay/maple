@@ -686,6 +686,11 @@ export const getMapleUtilityClassMap = ({
       none: { float: 'none' },
     },
 
+    'grid-areas': {
+      _common: { display: 'grid' },
+      '*': { 'grid-template-areas': '*' },
+    },
+
     'grid-rows': {
       _common: { display: 'grid' },
       '*': { 'grid-template-rows': '*' },
